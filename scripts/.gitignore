@@ -1,0 +1,8 @@
+__pycache__
+.pytest_cache
+.~lock.*
+Tests*.csv
+analytic_shrinkage/*
+Test-*
+FlaPy-Repos.csv
+tt-env/
