@@ -17,6 +17,7 @@ This artifact supports the empirical study that investigates the dynamic behavio
 - **`docs/`**:
     - `environment.md`: Hardware and software specifications.
     - `replication_protocol.md`: Step-by-step guide to replicate the experiment.
+    - `Organizacao_projeto_NOD.docx`: Original document with the complete list of test paths, virtual environment paths, and test commands for all 61 projects.
 
 ## 3. Data Availability
 
@@ -43,32 +44,10 @@ See **`docs/replication_protocol.md`** for the full step-by-step guide. In short
 ### Step 1: Environment Setup
 
 1. Install Python 3.12.
-2. Create isolated virtual environments for each of the 61 projects (see `data/projects_list.csv`).
+2. Create isolated virtual environments for each of the 61 projects. The complete list of paths and commands is available in `data/projects_list.csv` and in the original document `docs/Organizacao_projeto_NOD.docx`.
 3. Install the `pytest-json-report` plugin in every virtual environment:
 
     ```bash
     cd scripts/setup
     chmod +x instalar_plugin.sh
     ./instalar_plugin.sh
-
-    Edit the ambientes array in instalar_plugin.sh if your paths differ.
-
-Step 2: Data Collection
-bash
-
-python3 csv_runner.py --analise coverage --workers 16 > output_coverage_i9.txt 2>&1
-python3 csv_runner.py --analise profiling --workers 16 > output_profiling_i9.txt 2>&1
-python3 csv_runner.py --analise tracing --workers 16 > output_tracing_i9.txt 2>&1
-python3 csv_runner.py --analise none --workers 16 > output_puro_i9.txt 2>&1
-
-Step 3: Data Analysis
-
-Use the scripts in analysis/ to compute statistics and generate figures.
-6. Project List (Table 1)
-
-The complete list of the 61 projects is available in data/projects_list.csv.
-7. License
-
-    Code: MIT License (see LICENSE).
-
-    Data and Documentation: Creative Commons Attribution 4.0 International (CC-BY 4.0).
