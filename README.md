@@ -115,7 +115,7 @@ The experiments ran on the machine below. Other Linux machines work, but absolut
 Notes:
 
 - **Linux is required** (setup scripts are Bash and paths use `/`).
-- Full re-collection is long-running (3 analyses × 247 tests × 100 executions, plus the baseline). Use `tmux`, `screen`, or `nohup`.
+- Full re-collection is long-running (3 analyses × 247 tests × 100 executions, plus the baseline).
 - Reserve ample disk space for the 61 cloned projects, their 61 virtual environments, and the raw results. Some projects (e.g., Airflow, Prefect) have large dependency trees.
 
 ## 6. Replication Protocol
