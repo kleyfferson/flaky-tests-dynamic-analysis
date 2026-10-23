@@ -14,10 +14,9 @@ This repository contains the code, data pointers, and replication protocol of an
 4. [Data Availability](#4-data-availability)
 5. [System Requirements](#5-system-requirements)
 6. [Replication Protocol](#6-replication-protocol)
-7. [Per-Project Test Execution Guide](#7-per-project-test-execution-guide)
-8. [Subject Projects](#8-subject-projects)
-9. [Troubleshooting](#9-troubleshooting)
-10. [Citation](#10-citation)
+7. [Subject Projects](#7-subject-projects)
+8. [Troubleshooting](#8-troubleshooting)
+9. [Citation](#9-citation)
 
 ---
 
@@ -27,9 +26,9 @@ The study examines flaky tests from three dynamic-analysis perspectives, plus a 
 
 | Perspective | `--analise` flag | Executions per test | Parallelism |
 |---|---|---|---|
-| Code coverage | `coverage` | 300 | 16 workers |
-| Profiling | `profiling` | 300 | 16 workers |
-| Function-level tracing | `tracing` | 300 | 16 workers |
+| Code coverage | `coverage` | 100 | none (16 cores reserved) |
+| Profiling | `profiling` | 100 | none (16 cores reserved) |
+| Function-level tracing | `tracing` | 100 | none (16 cores reserved) |
 | Baseline (no dynamic analysis) | `none` | 100 | none (16 cores reserved) |
 
 The baseline records, for each of the 247 flaky tests, how many runs passed and how many failed.
@@ -54,10 +53,10 @@ flaky-tests-dynamic-analysis/
 │   └── pictures/              # Figures used in the paper
 ├── data/
 │   ├── download_data.md       # How to download the raw data from Zenodo
-│   └── projects_list.csv      # The 61 projects (test path, test command, venv path, results path)
+│   └── projects_list.csv      # The 61 projects (repository link, commit hash, test path, test command, venv path, results path)
 ├── docs/
 │   ├── environment.md         # Hardware and software specifications
-│   └── Organização_projeto_NOD.docx   # Per-project execution guide
+│   └── Organização_projeto_NOD.docx   # Working document: test/venv/results paths, test commands, 247 test names ↔ hashes
 ├── paper/
 │   └── dynamic_analysis_in_flaky_tests.pdf
 └── scripts/                   # Data-collection harness (Step 2)
@@ -77,8 +76,8 @@ flaky-tests-dynamic-analysis/
 
 | File | Purpose |
 |---|---|
-| `cv_violin.py` | Coefficient-of-variation violin plot → `pictures/cv_violin_reordered_v2.1.png` |
-| `histograma.py` | Passed/failed histograms (general) → `pictures/*.png` |
+| `cv_violin.py` | Coefficient-of-variation profiling violin plot → `pictures/cv_violin_reordered_v2.1.png` |
+| `histograma.py` | Coverage-specific histograms (avg/sd) → `pictures/*.png` |
 | `histograma_tracing.py` | Tracing-specific histograms (avg/sd) → `pictures/histograms_tracing_*.png` |
 | `imagem.py` | Figure composition helper (e.g., `pictures/grafico_artigo.png`) |
 | `gerador_estatisticas_final_coverage.py` | Coverage statistics (avg, sd, CV) → `Estatisticas_Cobertura_Final.xlsx` |
@@ -97,10 +96,7 @@ Tracked intermediate tables: `boxplot.csv`, `boxplot_tracing.csv`, `reproducedTe
 
 The raw data is publicly available on Zenodo: <https://zenodo.org/records/23484158>
 
-It contains:
-
-- **300 executions** of each dynamic analysis (`coverage`, `profiling`, `tracing`) for all 247 flaky tests.
-- **100 executions** of the baseline (`none`): pass/fail counts per test, without dynamic analysis and without parallelism.
+It contains **100 executions** of each dynamic analysis (`coverage`, `profiling`, `tracing`) for all 247 flaky tests, i.e., **300 executions per test** in total.
 
 Download it and place it in `data/results/` (create the directory). See [`data/download_data.md`](data/download_data.md) for detailed instructions.
 
@@ -119,14 +115,12 @@ The experiments ran on the machine below. Other Linux machines work, but absolut
 Notes:
 
 - **Linux is required** (setup scripts are Bash and paths use `/`).
-- Full re-collection is long-running (3 analyses × 247 tests × 300 executions, plus the baseline). Use `tmux`, `screen`, or `nohup`.
+- Full re-collection is long-running (3 analyses × 247 tests × 100 executions, plus the baseline). Use `tmux`, `screen`, or `nohup`.
 - Reserve ample disk space for the 61 cloned projects, their 61 virtual environments, and the raw results. Some projects (e.g., Airflow, Prefect) have large dependency trees.
-
-Full details: [`docs/environment.md`](docs/environment.md).
 
 ## 6. Replication Protocol
 
-Per-project setup details (commits, Python versions, pinned dependencies, workarounds) are in [Section 7](#7-per-project-test-execution-guide).
+Everything needed to set up each project (repository link, pinned commit, test path, test command, venv location, and results folder) is in [`data/projects_list.csv`](data/projects_list.csv). The original working document, [`docs/Organização_projeto_NOD.docx`](docs/Organização_projeto_NOD.docx), holds the paths and commands plus the list of the 247 flaky tests.
 
 ### Step 0: Sanity check (optional, recommended)
 
@@ -153,7 +147,7 @@ sudo apt install -y git build-essential python3.12 python3.12-venv python3.12-de
 python3.12 --version    # expected: Python 3.12.x
 ```
 
-Some projects compile native extensions or need extra system libraries. If an install fails, check the per-project notes in Section 7.
+Some projects compile native extensions or need extra system libraries. If an install fails, check that project's own documentation.
 
 #### 1.2 Clone this repository
 
@@ -164,7 +158,7 @@ cd flaky-tests-dynamic-analysis
 
 #### 1.3 Choose a projects directory
 
-All 61 subject projects are cloned into one directory. Paths in `data/projects_list.csv` are relative to it.
+All 61 subject projects are cloned into one directory. The paths in `data/projects_list.csv` are the **absolute paths of the original machine** (`/home/kleyfferson/Documentos/projetos_mestrado/...`); on your machine, the same layout lives under `$PROJECTS_ROOT`.
 
 ```bash
 export PROJECTS_ROOT="$HOME/flaky_projects"
@@ -175,22 +169,34 @@ mkdir -p "$PROJECTS_ROOT"
 
 #### 1.4 Clone the 61 subject projects
 
-Each row of `data/projects_list.csv` identifies a project whose upstream repository must be cloned into `$PROJECTS_ROOT/<folder>`, where `<folder>` is the first component of `test_path` (e.g., `Flexget/flexget/tests/` → `Flexget`; `kindle-maker` → `kindle_maker`).
+Each row of `data/projects_list.csv` gives the upstream repository (`repository_link`) and the exact commit used in the study (`commit_hash`). Each project is cloned into `$PROJECTS_ROOT/<folder>`, where `<folder>` is the first directory after `projetos_mestrado/` in `test_path` (e.g., `.../Flexget/flexget/tests/` → `Flexget`; `kindle-maker` → `kindle_maker`).
+
+> **The folder comes from `test_path`, not from the repository name.** For example, `gamble_git` is cloned from `jpetrucciani/gamble`, and `rs3clans_py` from `johnvictorfs/rs3clans.py`.
+
+Run this from the repository root to clone and pin all 61 projects:
 
 ```bash
-cd "$PROJECTS_ROOT"
-git clone <upstream-url> <folder>
-cd <folder>
-git checkout <commit>       # pin to the version used in the study
+python3 - <<'EOF'
+import csv, os, subprocess
+
+root = os.environ["PROJECTS_ROOT"]
+prefix = "/home/kleyfferson/Documentos/projetos_mestrado/"
+
+with open("data/projects_list.csv") as f:
+    for row in csv.DictReader(f):
+        folder = row["test_path"].removeprefix(prefix).split("/")[0]
+        dest = os.path.join(root, folder)
+        if not os.path.isdir(dest):
+            subprocess.run(["git", "clone", row["repository_link"], dest], check=True)
+        subprocess.run(["git", "-C", dest, "checkout", row["commit_hash"]], check=True)
+EOF
 ```
 
-Upstream URLs and exact commit hashes per project are listed in the [per-project guide](#7-per-project-test-execution-guide).
-
-<!-- TODO: add `repo_url` and `commit` columns to data/projects_list.csv so this step can be fully scripted. -->
+The checkout leaves each project in a detached-HEAD state at the study's commit, which is expected.
 
 #### 1.5 Create one virtual environment per project
 
-Each project has its own venv at the `venv_path` given in `data/projects_list.csv` (e.g., `airflow/venv-airflow/`, `loguru/venv-loguru/`, `gamble_git/.venv-gamble/`).
+Each project has its own venv at the `venv_path` given in `data/projects_list.csv` (e.g., `$PROJECTS_ROOT/airflow/venv-airflow/`, `$PROJECTS_ROOT/loguru/venv-loguru/`, `$PROJECTS_ROOT/gamble_git/.venv-gamble/`).
 
 ```bash
 cd "$PROJECTS_ROOT/loguru"
@@ -244,31 +250,30 @@ deactivate
 
 ### Step 2: Data collection
 
-Run all commands from `scripts/` with Python 3.12. Output is redirected to one log file per run:
+Run one command at a time from `scripts/`, using Python 3.12. Output is redirected to one log file per run:
 
 ```bash
 cd scripts
 
-python3 csv_runner.py --analise coverage  --workers 16 > output_coverage_i9.txt  2>&1
-python3 csv_runner.py --analise profiling --workers 16 > output_profiling_i9.txt 2>&1
-python3 csv_runner.py --analise tracing   --workers 16 > output_tracing_i9.txt   2>&1
-python3 csv_runner.py --analise none                   > output_puro_i9.txt      2>&1
+python3 csv_runner.py --analise coverage  > output_coverage.txt  2>&1
+python3 csv_runner.py --analise profiling > output_profiling.txt 2>&1
+python3 csv_runner.py --analise tracing   > output_tracing.txt   2>&1
+python3 csv_runner.py --analise none      > output_puro.txt      2>&1
 ```
 
 | Flag | Meaning |
 |---|---|
-| `--analise {coverage,profiling,tracing,none}` | Dynamic analysis applied during test runs (`none` = baseline, no analysis, no parallelism) |
-| `--workers N` | Number of parallel workers (16 in the experiments; dynamic analyses only) |
+| `--analise {coverage,profiling,tracing,none}` | Dynamic analysis applied during test runs (`none` = baseline, no analysis) |
 
 Recommendations:
 
 - Run the configurations **sequentially, never concurrently**; concurrent runs compete for CPU and distort execution-time measurements.
-- Avoid other heavy workloads during collection and keep the same `--workers` value across the three dynamic-analysis runs.
+- Avoid other heavy workloads on the machine during collection.
 - For long runs, use `nohup` or `tmux`:
 
   ```bash
-  nohup python3 csv_runner.py --analise coverage --workers 16 > output_coverage_i9.txt 2>&1 &
-  tail -f output_coverage_i9.txt
+  nohup python3 csv_runner.py --analise coverage > output_coverage.txt 2>&1 &
+  tail -f output_coverage.txt
   ```
 
 Per-project results are written to one folder per project (e.g., `Test-airflow/`, `Test-loguru/`; exact names in the `results_path` column of `data/projects_list.csv`). Move or copy them under `data/results/` before running the analysis scripts.
@@ -288,29 +293,27 @@ python3 <script>.py
 
 See the file list in [Section 3](#3-repository-structure) for what each script does.
 
-## 7. Per-Project Test Execution Guide
+## 7. Subject Projects
 
-[`docs/Organização_projeto_NOD.docx`](docs/Organização_projeto_NOD.docx) (the *"Guia de Execução de Testes Locais"*) consolidates the setup notes gathered while reproducing each of the 61 projects. It is the practical complement to Step 1, especially when a project's own instructions are outdated (common in legacy code).
+`data/projects_list.csv` has one row per project (61 rows) with these columns:
 
-For each project it documents:
+| Column | Content |
+|---|---|
+| `project_name` | Project name |
+| `test_path` | Directory with the project's tests |
+| `venv_path` | Project's virtual environment |
+| `test_command` | Command used to run the tests |
+| `results_path` | Folder where the harness wrote the results |
+| `repository_link` | Upstream GitHub repository |
+| `commit_hash` | Exact commit used in the study |
 
-- **Repository and commit:** upstream URL and the exact commit hash used.
-- **Python version:** the one that worked (often 3.8 for legacy projects, 3.10+ for newer ones).
-- **Commands:** venv creation and exact test invocation (`python -m pytest`, `nosetests`, `python -m nose`, `python -m unittest discover`).
-- **Dependency pinning** for projects that break on modern versions (e.g., `Cython<3.0`, `numpy==1.21.6`, `pytest==5.4.3`, `prompt-toolkit<3.0.29`, `tornado<6.0`, `Pillow==8.2.0`, `scipy<1.6.0`, `scikit-image<0.18`, `asdf<2.8.0`, `sqlalchemy<1.4`, `hypothesis<6.0`).
-- **System dependencies** that Python packages silently assume (e.g., `pandoc` for pypfm; `mpd` for piripherals; `openssh-server` + SSH agent for pysshutil; `libjpeg-dev`/`zlib1g-dev` for Pillow; `default-java` for service-manager).
-- **Network isolation** via `conftest.py`, fixtures, or monkeypatching for projects whose tests hit live APIs (forex-python, supportdata, fossor, rs3clans.py, layouts-python, pyquery).
-- **Venv placement:** some projects scan the working tree, so the venv must live outside the project folder (e.g., ftpsync) or start with a dot (e.g., `.venv-gamble`, `.venv-keplertools`).
-- **`python -m pytest` as default:** module invocation avoids leaking to a global interpreter when a venv silently fails to install pytest.
-- **Known issues** that matter when interpreting results: failures from environment coupling (service-manager; kindle_maker, since kindlegen was discontinued), locale-dependent doctests (pysshutil, pt-BR vs. en-US), flaky network tests, and `FutureWarning`/`DeprecationWarning` from modern frameworks on legacy code.
+All paths are **absolute paths from the original machine**, under `/home/kleyfferson/Documentos/projetos_mestrado/`. In that setup, the harness repository (`projetos-TT-Jo-o/`) lived inside the same directory and wrote results to `projetos-TT-Jo-o/Test-<project>/`. To use the file on another machine, replace that prefix with your `$PROJECTS_ROOT`, e.g.:
 
-> When reproducing a specific project, treat the guide as the authoritative source and fall back to the project's own README only where the guide is silent.
+```bash
+sed "s#/home/kleyfferson/Documentos/projetos_mestrado#$PROJECTS_ROOT#g" data/projects_list.csv > projects_list.local.csv
+```
 
-## 8. Subject Projects
-
-`data/projects_list.csv` has one row per project (61 rows) with the columns `id`, `project`, `test_path`, `test_command`, `venv_path`, `results_path`. All paths are relative to `$PROJECTS_ROOT`. In the original setup, the harness repository (`projetos-TT-Jo-o/`) lived inside that directory and wrote results to `projetos-TT-Jo-o/Test-<project>/`.
-
-The 247 flaky tests are those covered by the raw data ([Section 4](#4-data-availability)) and the per-project guide. The list can be reconstructed from `scripts/FlapyRepos/flaky.csv` together with the pass/fail information in the Zenodo dataset. `docs/Organização_projeto_NOD.docx` is the original working document from which `projects_list.csv` was derived.
+The 247 flaky tests are those covered by the raw data ([Section 4](#4-data-availability)). They are listed in the last table of `docs/Organização_projeto_NOD.docx` (test name ↔ hash), and the list can also be reconstructed from `scripts/FlapyRepos/flaky.csv` together with the pass/fail information in the Zenodo dataset. The same document is the original working document from which `projects_list.csv` was derived: it holds each project's test path, test command, venv path, and results path (the repository links and commit hashes were added later, in the CSV only).
 
 <details>
 <summary>The 61 projects</summary>
@@ -319,23 +322,23 @@ airflow, Flexget, fonttools, hypothesis, ipython, kombu, libcloud, loguru, prefe
 
 </details>
 
-## 9. Troubleshooting
+## 8. Troubleshooting
 
 | Symptom | Likely cause / fix |
 |---|---|
 | `python3.12: command not found` | Install Python 3.12 (see 1.1). |
 | `No module named venv` | `sudo apt install python3.12-venv`. |
-| `pip install` fails building a wheel | Install system headers (`build-essential`, `python3.12-dev`, plus any library named in the error); see Section 7. |
-| `No such file or directory` for a project path | `PROJECTS_ROOT` is not set in the current shell, or the folder name differs from `test_path` in `data/projects_list.csv`. |
+| `pip install` fails building a wheel | Install system headers (`build-essential`, `python3.12-dev`, plus any library named in the error); see that project's own documentation. |
+| `No such file or directory` for a project path | `PROJECTS_ROOT` is not set in the current shell, the folder name differs from `test_path` in `data/projects_list.csv`, or the CSV paths still point to the original `/home/kleyfferson/...` prefix. |
 | Harness cannot find the project/venv | Hard-coded base path in the scripts; update it to your `$PROJECTS_ROOT`. |
 | `unrecognized arguments: --json-report` | `pytest-json-report` is missing in that venv (rerun 1.6). |
 | `ModuleNotFoundError` although the package is installed in the venv | The shell leaked to the global interpreter; use `python -m pytest` and re-activate the venv. |
-| Pass/fail results differ from the paper | Legacy projects pin old dependency versions; check the exact versions in Section 7. |
-| A test hits a live API and fails with 403/429/timeouts | The guide documents `conftest.py`/fixtures that mock these calls (Section 7). |
+| Pass/fail results differ from the paper | Legacy projects may need old dependency versions; follow each project's own requirements files and documentation. |
+| A test hits a live API and fails with 403/429/timeouts | Some tests depend on live external services; failures from rate limits or timeouts may reflect the environment, so check network access. |
 | Execution times differ from the paper | Expected on different hardware; compare relative overheads between analyses, not absolute times. |
 | A test does not behave as flaky | Flakiness is non-deterministic; it shows up across repeated executions, not necessarily in a single run. |
 
-## 10. Citation
+## 9. Citation
 
 <!-- TODO: fill in authors, venue, year, and DOI once available. -->
 
