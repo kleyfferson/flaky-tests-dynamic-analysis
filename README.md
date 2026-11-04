@@ -151,13 +151,6 @@ python3 csv_runner.py --analise none      > output_puro.txt      2>&1
 
 `none` is the baseline: it only records how many runs of each test passed and how many failed. The other three run each test 100 times with the corresponding analysis. Nothing runs in parallel, and the harness reserves 16 cores for the run.
 
-Run them one at a time. Running two at once makes them fight for CPU and distorts the execution times. Avoid other heavy work on the machine while collecting. For long runs, `nohup` or `tmux` helps:
-
-```bash
-nohup python3 csv_runner.py --analise coverage > output_coverage.txt 2>&1 &
-tail -f output_coverage.txt
-```
-
 Results go to one folder per project (`Test-airflow/`, `Test-loguru/`, ...; the exact names are in the `results_path` column). Copy or move them into `data/results/` before the analysis.
 
 ## Analysis
