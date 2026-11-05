@@ -1,6 +1,8 @@
 # Per-project setup guide
 
-How we got each of the 61 subject projects to run its test suite locally. The authoritative source for repository links, commits, venv paths and test commands is `data/projects_list.csv`; this file records what we had to do on top of a plain `git clone` + `pip install`, and what result we got.
+How we got each of the 61 subject projects to run its test suite locally. The authoritative source for repository links, commits, venv paths and test commands is `data/projects_list.csv`; this file records what we had to do on top of a plain `git clone` + `pip install`.
+
+> **Scope note.** All setup steps below were executed locally on a single machine. This guide deliberately records **no pass/fail counts, no percentages and no runtimes**: these suites are flaky, several depend on live network services, external daemons or timing, and the numbers observed on one machine are not reproducible on another. What is recorded here is *what had to be done* to get each suite to run — commands, Python versions, dependency pins, environment variables, test patches, required files and external services — plus qualitative notes that explain why a given step is necessary. Counts, when needed, live in the companion spreadsheets, which carry the same scope caveat.
 
 ## Conventions
 
@@ -30,7 +32,7 @@ python -m pytest
 
 These were set up first, mostly with older Python versions and pinned dependencies. Repository links and hashes are in the CSV unless given here.
 
-### airflow (1.10.x)
+### airflow (1.10.x, c743b95a02ba1ec04013635a56ad042ce98823d2)
 
 Goal: run the core, models, hooks and standard operators; skip tests that need Oracle, Samba, Kerberos or Kubernetes.
 
@@ -66,7 +68,6 @@ python -m pytest tests \
   -rf
 ```
 
-- Result: about 3,500 passed; a sample run gave 59 failed, 3479 passed, 166 skipped, 3 xfailed, 2 xpassed.
 - Residual failures come from timezone differences, missing git binaries or `/tmp` permissions, and timeouts in slow concurrency tests.
 - If a new `ImportError` appears, add the offending file to the `--ignore` list. The full suite needs the Airflow Breeze Docker environment (see the project's `TESTING.rst`).
 
@@ -227,8 +228,6 @@ pip install -e .
 pytest tests
 ```
 
-Result: 5 passed.
-
 ### analytic_shrinkage (`752a0f90696b1ca27a8b84ada3616cdfc98004a9`)
 
 Repository: https://github.com/matzhaugen/analytic_shrinkage · venv `venv-analytic_shrinkage`
@@ -240,8 +239,6 @@ pip install -r requirements.txt
 pip install -e .
 pytest
 ```
-
-Result: 5 passed, 1 deprecation warning.
 
 ### cuckoopy (`e5fab0c4826387f99ddafb0365759cb7111cfd64`)
 
@@ -255,8 +252,6 @@ pip install -e .
 pytest
 ```
 
-Result: 18 passed.
-
 ### darkchess (`c626de547c3e58a77f25fddb86de9b07bc47ae86`)
 
 Repository: https://github.com/vishalsubbiah/darkchess · venv `venv-darkchess`
@@ -265,8 +260,6 @@ Repository: https://github.com/vishalsubbiah/darkchess · venv `venv-darkchess`
 pip install -e .          # install_requires covers numpy, sty, mock, pytest
 pytest --pyargs darkchess
 ```
-
-Result: 9 passed, 32 `SyntaxWarning`s (`is` vs `==`), about 25 s.
 
 ### data-partitioner (`c37bca05576648c3f69f8694951bb2ae9ea9ed21`)
 
@@ -278,8 +271,6 @@ pip install -e .
 pytest
 ```
 
-Result: 18 passed.
-
 ### dockerfile_bakery (`fc531752d9fe901375636377dac884a6b750e146`)
 
 Repository: https://github.com/kujyp/dockerfile_bakery · venv `venv-dockerfile_bakery`
@@ -290,8 +281,6 @@ pip install -e .
 pytest
 ```
 
-Result: 8 passed.
-
 ### fistro (`42c129d058fe017d3d1436da4350b6842f1c5535`)
 
 Repository: https://github.com/kingoodie/fistro · venv `venv-fistro`
@@ -301,8 +290,6 @@ pip install pytest
 pip install -e .          # reads pyproject.toml
 pytest
 ```
-
-Result: 8 passed.
 
 ### forex-python (`e1fa19670b43f6222cb23c224be19dafd9ab244e`)
 
@@ -357,8 +344,6 @@ pip install -e .
 pytest
 ```
 
-Result: 39 passed in about 0.08 s (versus minutes against the live APIs).
-
 ### supportdata (`d0b878e2779120f3cdd2d5a241addc18e26f8616`)
 
 Repository: https://github.com/castelao/supportdata · venv `venv-supportdata`
@@ -405,8 +390,6 @@ pip install -e .
 pytest
 ```
 
-Result: 5 passed in about 0.01 s.
-
 ### fossor (`d8dbdc40f2f16da601c317dfa74b83e3932c9bb3`)
 
 Repository: https://github.com/linkedin/fossor · venv `venv-fossor`
@@ -421,8 +404,6 @@ sed -i "s/assert 'Count: 5' in result/# assert 'Count: 5' in result/g" test/test
 sed -i 's/assert result.exit_code == -1/assert result.exit_code != 0/g' test/test_cli.py
 pytest
 ```
-
-Result: 64 passed, about 40 s.
 
 ### ftpsync (`bbf40b8ebd28762b92b70571e0d9a6e642ce3467`)
 
@@ -439,8 +420,6 @@ pip install -e .
 python -m pytest
 ```
 
-Result: 1 passed, about 1 s (about 51 s with the venv inside the project).
-
 ### gamble (`d17b25899183a4c4b25fe644024ff754132ae513`)
 
 Repository: https://github.com/jpetrucciani/gamble · folder `gamble_git` · venv `.venv-gamble`
@@ -450,8 +429,6 @@ pip install pytest pytest-cov
 pip install -e .
 pytest
 ```
-
-Result: 14 passed.
 
 ### hotwing-core (`f4d864b1618e928bd981540b2a446bdb74023ca6`)
 
@@ -463,8 +440,6 @@ pip install -e .
 pytest
 ```
 
-Result: 49 passed, 39 `DeprecationWarning: invalid escape sequence`, about 18 s.
-
 ### jinja2-github (`4012e5f87ea4b53d2eee406f91cf6738008636a0`)
 
 Repository: https://github.com/jcfr/jinja2-github · venv `.venv-jinja2github`
@@ -475,8 +450,6 @@ pip install -r requirements-dev.txt
 pip install -e .
 pytest
 ```
-
-Result: 2 passed, about 3.4 s (calls the GitHub API; runtime depends on network latency).
 
 ### kb_python (`3ce4d8e655da2da74a5114c680c9d2cf3a2b328c`)
 
@@ -490,8 +463,6 @@ pip install pytest==8.2.2 pytest-cov==5.0.0
 pip install -e .
 python -m pytest
 ```
-
-Result: 129 passed, about 14 s.
 
 ### keplertools (`8a46aea897a7cd584c4c2afa1e5ea160f47aef6e`)
 
@@ -507,8 +478,6 @@ python setup.py build_ext --inplace
 python -m pytest
 ```
 
-Result: 14 passed.
-
 ### kevinarpe-rambutan3 (`5d7469912b559338dc15f5c7fb2abc91103ea0c5`)
 
 Repository: https://github.com/kevinarpe/kevinarpe-rambutan3 · venv `.venv-rambutan3`
@@ -518,8 +487,6 @@ pip install -r requirements.txt
 pip install -e .[test]
 python -m pytest
 ```
-
-Result: 190 passed, under 1 s.
 
 ### langsplit (`d30d47bd6f73852dc716f1e79225d8d49dc39daa`)
 
@@ -533,8 +500,6 @@ pip install -e .
 python -m pytest
 ```
 
-Result: 11 passed.
-
 ### layouts-python (`0b036e1f1695b16e0e6e61540ef7ecd6047a5bd1`)
 
 Repository: https://github.com/hid-io/layouts-python · venv `.venv-layoutspython`
@@ -544,8 +509,6 @@ pip install -r requirements.txt pytest
 pip install -e .
 python -m pytest
 ```
-
-Result: 10 passed, about 12.5 s. `test_cache.py` clones repositories from GitHub at runtime, so it needs network access.
 
 ### levitate (`f6b2b2666e82bbff0ef5664aa687bb87876467cb`)
 
@@ -558,8 +521,6 @@ pip install -e .
 python -m pytest        # setup.cfg adds the coverage flags
 ```
 
-Result: 768 passed, 76% coverage, 2 `SyntaxWarning`s (`is not` with a literal), about 10.6 s.
-
 ### nnweaver (`e7a94d743f6eb118592524e30f54cda22cdc5e81`)
 
 Repository: https://github.com/gvinciguerra/nnweaver · venv `.venv-nnweaver`
@@ -569,8 +530,6 @@ pip install -r requirements.txt
 pip install -e .
 python -m pytest
 ```
-
-Result: 28 passed, 1 failed (the Bundle Method optimizer raises `ValueError: Rank(A) < p` from `cvxopt`), 91% coverage, 22 warnings (mostly `np.matrix`).
 
 ### override (`e34bd3c8676233439de5c002367b3bff5c1b88d6`)
 
@@ -587,8 +546,6 @@ echo "pystache" > requirements.txt
 ./.venv-override/bin/python -m pytest
 ```
 
-Result: 5 passed.
-
 ### packeteer (`2c6e0e8683462e17ff095a89f13a10daf29ef9e0`)
 
 Repository: https://github.com/lungdart/packeteer · venv `.venv-packeteer`
@@ -598,8 +555,6 @@ pip install future six pytest pytest-cov
 pip install -e .
 python -m pytest
 ```
-
-Result: 50 passed.
 
 ### piripherals (`74e4807a64363e3c95a03222fa250a1073387eaf`)
 
@@ -615,8 +570,6 @@ pip install -e .
 python -m pytest
 ```
 
-Result: 74 passed, 6 xfailed, 5 failed in `test_mpd.py` (they assume playlists and a mixer configured on the original developer's server). Threads also raise `NameError: name 'GPIO' is not defined` because this is not a Raspberry Pi.
-
 ### pybnn (`6bd277421b83f882fa43d8dad2b7851b9682aa4b`)
 
 Repository: https://github.com/automl/pybnn · venv `.venv-pybnn`
@@ -626,8 +579,6 @@ pip install -r requirements.txt pytest
 pip install -e .
 python -m pytest
 ```
-
-Result: 17 passed, 8 warnings (`emcee` deprecations, NumPy overflow in casts), about 7 s.
 
 ### pycco (`27b1bf012e204c4beda18fb48cdf4b378f68ba8d`)
 
@@ -639,8 +590,6 @@ pip install -e .
 python -m pytest
 ```
 
-Result: 17 passed, no warnings, about 4.6 s (uses `hypothesis`).
-
 ### pylabeledrf (`23e2c2b2c73d35b6c87dd332b45da8d31c0ea63f`)
 
 Repository: https://github.com/dessimozlab/pylabeledrf · venv `.venv-pylabeledrf`
@@ -650,8 +599,6 @@ pip install -r requirements.txt pytest
 pip install -e .
 python -m pytest
 ```
-
-Result: 2 passed.
 
 ### pymannkendall (`081a1dec1456b682f0f86488b50d47f9f97ec9dd`)
 
@@ -663,8 +610,6 @@ pip install -e .
 python -m pytest -v
 ```
 
-Result: 14 passed, 8 `RuntimeWarning`s (invalid value in divide).
-
 ### pymemorydb (`9c8e864957d6fe754539601fd67a7b802b5ceb35`)
 
 Repository: https://github.com/davidbetz/pymemorydb · venv `.venv-pymemorydb`
@@ -674,8 +619,6 @@ pip install pytest
 pip install -e .
 python -m pytest -v
 ```
-
-Result: 45 passed, 2 failed in `test_textanalysis.py`:
 - `test_get_tokenized_data_all_chained`: asserts a fixed result order (`all[0]`) that is not guaranteed.
 - `test_get_tokenized_data_two_indices`: `TypeError: string indices must be integers` (a lambda indexes strings with `_['sum']`).
 
@@ -692,8 +635,6 @@ pip install -e .
 python -m pytest -v
 ```
 
-Result: 4 passed.
-
 ### pyquery (`f2533d1974d125eafb950d742193b3509f437ce5`)
 
 Repository: https://github.com/gawel/pyquery · venv `.venv-pyquery`
@@ -702,8 +643,6 @@ Repository: https://github.com/gawel/pyquery · venv `.venv-pyquery`
 pip install -e .[test]
 python -m pytest
 ```
-
-Result: 143 passed, 7 failed. Causes: a live request to Wikipedia returns 403; mock-server responses now use `<span>` instead of `<p>`; newer `lxml` serializes some HTML entities differently. About 7.6 s.
 
 ### pyss3 (`0522e0dc3d07e2c842df8e975e68244beda4b4c5`)
 
@@ -717,8 +656,6 @@ pip install -r requirements-dev.txt
 pip install -e .
 python -m pytest
 ```
-
-Result: 16 passed, 2 failed (NumPy rejects ragged arrays in `util.py`; global state in `server.py`, `Server.__test_path__` is `None`), 3 warnings.
 
 ### pysshutil (`e3ab876ed7b76637e6f5a0870cd41ea1f3d47fdb`)
 
@@ -739,8 +676,6 @@ pip install -r test_requirements.txt
 pip install -e .
 python -m pytest
 ```
-
-Result: 55 passed, 2 failed, about 55 s. One failure is a doctest that expects English output (our system was in pt-BR); the other is `test_server_close_cache`, which fails with `ConnectionResetError` on a real TCP socket.
 
 ### python-matlab-functions (`2860bf48f904d546af75143c531750c8857670bc`)
 
@@ -764,8 +699,6 @@ pip install -e .
 nosetests --nocapture -v
 ```
 
-Result: 4 tests OK.
-
 ### python-timemarker (`16fc4d4f9d6b534b94005169c977ed143f4f9dc5`)
 
 Repository: https://github.com/davidr/python-timemarker · venv `.venv-timemarker`
@@ -776,8 +709,6 @@ pip install -e .
 python -m pytest
 ```
 
-Result: 8 passed, about 1 s.
-
 ### r_map (`56cad81c91153d81e831d6afa49b92e5117c2171`)
 
 Repository: https://github.com/mentaal/r_map · venv `.venv-rmap`
@@ -787,8 +718,6 @@ pip install pytest
 pip install -e .
 python -m pytest
 ```
-
-Result: 66 passed.
 
 ### rs3clans.py (`692ffb859d954a304d039a6e20cc39bc55ed13cb`)
 
@@ -807,8 +736,6 @@ pip install -e .
 python -m pytest
 ```
 
-Result: 33 passed, 3 failed (`test_player_doesnt_exist`: the API now returns a malformed string for unknown players and the library raises `JSONDecodeError`). About 9 s.
-
 ### service-manager (`e0a9f2a08e139e23d8a1199a2208b4f5a355a0be`)
 
 Repository: https://github.com/hmrc/service-manager · venv `.venv-servicemanager`
@@ -821,8 +748,6 @@ export JAVA_HOME=/usr/lib/jvm/default-java
 export WORKSPACE="$PROJECTS_ROOT/service-manager"
 python -m pytest -v -s test/
 ```
-
-Result: 57 tests collected; many fail because they need HMRC-internal resources (Nexus/Artifactory credentials, the private `testapps/basicplayapp` repository, variables such as `HODSTUBS_VERSION`). pytest 5.4.3.
 
 ### setigen (`30acd4645896d07c660be2ba00542f64b5c64316`)
 
@@ -838,8 +763,6 @@ pip install pytest
 python -m pytest
 ```
 
-Result (Python 3.10.20, pytest 9.0.3): 9 passed, 1 failed (`test_very_hres_chi2`: 0.0104 against a hard `< 0.01` threshold on random noise), 1 `pkg_resources` deprecation warning.
-
 ### spreading_dye_sampler (`4282f7609959a31d1b2a4832f3ed643b15c46cb6`)
 
 Repository: https://github.com/NLeSC/spreading_dye_sampler · venv `.venv-spreadingdye`
@@ -853,8 +776,6 @@ pip install -e .
 python -m pytest
 ```
 
-Result: 5 passed.
-
 ### textdistance (`bcd217408c674fa6740559de577c71c10183230d`)
 
 Repository: https://github.com/life4/textdistance · venv `.venv-textdistance`
@@ -863,8 +784,6 @@ Repository: https://github.com/life4/textdistance · venv `.venv-textdistance`
 pip install -e ".[test,benchmark]"
 python -m pytest
 ```
-
-Result: 430 passed (hypothesis 6.113.0), about 11.5 s.
 
 ### torch-embed-sim (`ace404f9cca0d47aa3efcf4e819bcd48899e4e35`)
 
@@ -877,8 +796,6 @@ pip install -e .
 python -m nose
 ```
 
-Result: 1 test OK.
-
 ### torch-layer-normalization (`89f405b60f53f85da6f03fe685c190ef394ce50c`)
 
 Repository: https://github.com/CyberZHG/torch-layer-normalization · venv `.venv-torchnorm`
@@ -889,8 +806,6 @@ pip install -r requirements-dev.txt
 pip install -e .
 python -m nose
 ```
-
-Result: 5 tests OK, with a `FutureWarning` about `torch.load` and `weights_only=False`.
 
 ### uhashring (`e45d6a7a2556e73c5a2c07f2f07ac76f8c22aca3`)
 
@@ -904,8 +819,6 @@ pip install python-memcached pytest
 python -m pytest
 ```
 
-Result: 19 passed, 1 skipped, 4 warnings (stale flake8 options in `tox.ini`).
-
 ### wiki-futures (`ae6bec3aafa7c2b881b2653eae1eb528f9b63bc7`)
 
 Repository: https://github.com/AndrewRPorter/wiki-futures · venv `.venv-wikifutures`
@@ -915,8 +828,6 @@ pip install -e .
 pip install pytest
 python -m pytest
 ```
-
-Result: 5 passed, 1 failed. `test_bad_content_titles` uses `pytest.warns(None)`, which current pytest rejects with a `TypeError`. The other tests call the live Wikipedia API (about 11.6 s).
 
 ### Verifone (`5509c08767a9b482cfe5a9572854cf4c73ad6c02`)
 
@@ -931,8 +842,6 @@ pip install -e .
 python -m unittest discover
 ```
 
-Result: 27 passed, 3 failed, 1 error, about 2 s. `test_005` sets the global currency to `SEK`, which leaks into `test_027` (expects `EUR`).
-
 ### kindle_maker (`a2b4c89f0e13d56b82c3a017d4f9b83c7e90a12f`)
 
 Repository: https://github.com/jachinlin/kindle_maker · venv `.venv-kindlemaker`
@@ -943,24 +852,136 @@ pip install pytest
 python -m pytest
 ```
 
-Result: 8 passed, 4 failed. The failing tests build the final MOBI file and need `kindlegen`, which Amazon discontinued, so the subprocess call fails.
-
 ---
 
 ## Other projects set up during the study
 
-These were configured while building the dataset but are not among the 61 subject projects. Kept for reference.
+The following projects were also configured during the study but are not among the 61 subject
+projects. Their setup notes follow the same per-project format used above: project and commit,
+setup commands, test command, and any relevant execution notes. The repository commit and
+environment details should be checked against the project data when needed.
 
-| Project | Commit | Python | Install | Test command | Notes |
-|---|---|---|---|---|---|
-| Celery | `552e067b40198429cd7c866a397069366ac8e530` | default | `pip install -e .`, then `-r requirements/test.txt`, `default.txt`, `pkgutils.txt` | `python -m pytest t/unit` | If `requirements/test.txt` is missing, try `pip install -e ".[test]"`. |
-| Conan 1.x | n/a | 3.6–3.9 | `-r conans/requirements.txt`, `conans/requirements_server.txt`; `pytest pytest-xdist parameterized mock webtest bottle codecov` | `python -m pytest conans/test/unittests` | Functional tests need cmake, gcc/clang. Whole suite: `conans/test`. |
-| Django REST Framework | `0323d6f8955f987771269506ca5da461e2e7a248` | 3.8 | `pip install -e .`, `django==3.0.*`, `pytest pytest-django` | `PYTHONPATH=. python -m pytest tests` | `conftest.py` configures Django; do not set `DJANGO_SETTINGS_MODULE` or keep a `pytest.ini`. |
-| Graphene | `7d2af3104e3c01ce4f9a1580faf40d8179079008` | default | `pip install -e ".[test]"` | `python -m pytest graphene` | Tests live inside the package; there is no top-level `tests/`. |
-| Hydra | `69d31ebf79a93f0a8378d896a359fb47b09f5074` | default | `pip install -e ".[dev]"` (fallback `-e .` + `pytest`) | `python -m pytest tests` | |
-| mitmproxy | `4511ea7c24a3d62373d6fa6d221ac96212ce11e4` | default | `sudo apt-get install build-essential libssl-dev libffi-dev python3-dev`; `pip install -e ".[dev]"` | `python -m pytest` | Opens real ports (8080): kill orphan processes after failures. Old code with OpenSSL 3 can fail on legacy renegotiation. |
-| Pillow | `92933b86574b9c80764bf52c357ed29e1ef53382` | default | `sudo apt-get install build-essential python3-dev libjpeg-dev zlib1g-dev libtiff5-dev libfreetype6-dev liblcms2-dev libopenjp2-7-dev libwebp-dev`; `pip install -e .`, `pytest mock numpy` | `python -m pytest` | Install system libs first, then `pip install -I -e .` if you built too early. Ghostscript needed for EPS/PDF tests. |
-| PyGithub | `31538337faaa61e104afede75a5fac802c9a1ab3` | default | `pip install -e .`; `pytest mock httpretty cryptography "pyjwt[crypto]"` | `python -m pytest` | Tests replay recorded responses, so no token is needed. If `httpretty` misbehaves, try `httpretty==1.0.5`. |
-| Pyramid | `7b182045ee77cdfb38fda5e55ccbdcd8ed1c9468` | default | `pip install -e ".[testing]"` | `python -m pytest` | Editable install is required (entry points). |
-| scikit-image | `8fbbb5169b8da6fb26b107a0a8c6de46a93f37cc` | 3.8 | `pip install "Cython<3.0.0" numpy==1.21.6 setuptools wheel`; `pip install --no-build-isolation -e .`; `pytest==5.4.3 pytest-cov==2.10.1 pluggy==0.13.1 scipy==1.5.4 matplotlib==3.3.4 imageio==2.9.0 networkx tifffile pillow` | `MPLBACKEND=Agg python -m pytest skimage --ignore=skimage/filters/rank/tests/test_rank.py` | `test_rank.py` uses `skip` at module level, which newer collection rejects. |
-| sunpy | `7c6e51e85410f3647af81e601a4bb4c9073a50c8` | 3.8 | `pip install "numpy<1.22" "scipy<1.6.0" "scikit-image<0.18" "pandas<1.4" "matplotlib<3.5"`; `"asdf<2.8.0" "sqlalchemy<1.4" "hypothesis<6.0" "parfive<2.0"`; `pytest pytest-mock pytest-astropy mock pytest-cov`; `pip install -e .[all,tests]` | `MPLBACKEND=Agg python -m pytest -W ignore sunpy` | `scipy<1.6` requires `scikit-image<0.18` (`QhullError`). |
+### Celery (552e067b40198429cd7c866a397069366ac8e530)
+
+```bash
+pip install -e .
+pip install -r requirements/test.txt -r requirements/default.txt -r requirements/pkgutils.txt
+python -m pytest t/unit
+```
+
+If `requirements/test.txt` is missing, try `pip install -e ".[test]"`.
+
+### Conan 1.x
+
+Python: 3.6–3.9.
+
+```bash
+pip install -r conans/requirements.txt -r conans/requirements_server.txt
+pip install pytest pytest-xdist parameterized mock webtest bottle codecov
+python -m pytest conans/test/unittests
+```
+
+Functional tests require CMake and a C/C++ compiler such as GCC or Clang. The full suite is
+under `conans/test`.
+
+### Django REST Framework (0323d6f8955f987771269506ca5da461e2e7a248)
+
+Python: 3.8.
+
+```bash
+pip install -e .
+pip install "django==3.0.*" pytest pytest-django
+PYTHONPATH=. python -m pytest tests
+```
+
+`conftest.py` configures Django. Do not set `DJANGO_SETTINGS_MODULE` or retain a `pytest.ini`.
+
+### Graphene (7d2af3104e3c01ce4f9a1580faf40d8179079008)
+
+```bash
+pip install -e ".[test]"
+python -m pytest graphene
+```
+
+Tests are located inside the package; there is no top-level `tests/` directory.
+
+### Hydra (69d31ebf79a93f0a8378d896a359fb47b09f5074)
+
+```bash
+pip install -e ".[dev]"
+python -m pytest tests
+```
+
+Fallback: install the project with `pip install -e .` and then install `pytest`.
+
+### mitmproxy (4511ea7c24a3d62373d6fa6d221ac96212ce11e4)
+
+```bash
+sudo apt-get install build-essential libssl-dev libffi-dev python3-dev
+pip install -e ".[dev]"
+python -m pytest
+```
+
+The tests open real ports (including port 8080); terminate orphaned processes after failures.
+Legacy code may fail with OpenSSL 3 because of legacy renegotiation.
+
+### Pillow (92933b86574b9c80764bf52c357ed29e1ef53382)
+
+```bash
+sudo apt-get install build-essential python3-dev libjpeg-dev zlib1g-dev libtiff5-dev \
+  libfreetype6-dev liblcms2-dev libopenjp2-7-dev libwebp-dev
+pip install -e .
+pip install pytest mock numpy
+python -m pytest
+```
+
+Install the system libraries first. If the project was built before they were installed, try
+`pip install -I -e .`. Ghostscript is required for EPS/PDF tests.
+
+### PyGithub (31538337faaa61e104afede75a5fac802c9a1ab3)
+
+```bash
+pip install -e .
+pip install pytest mock httpretty cryptography "pyjwt[crypto]"
+python -m pytest
+```
+
+Tests replay recorded responses, so no token is required. If `httpretty` misbehaves, try
+`httpretty==1.0.5`.
+
+### Pyramid (7b182045ee77cdfb38fda5e55ccbdcd8ed1c9468)
+
+```bash
+pip install -e ".[testing]"
+python -m pytest
+```
+
+An editable install is required for the entry points.
+
+### scikit-image (8fbbb5169b8da6fb26b107a0a8c6de46a93f37cc)
+
+Python: 3.8.
+
+```bash
+pip install "Cython<3.0.0" numpy==1.21.6 setuptools wheel
+pip install --no-build-isolation -e .
+pip install pytest==5.4.3 pytest-cov==2.10.1 pluggy==0.13.1 scipy==1.5.4 \
+  matplotlib==3.3.4 imageio==2.9.0 networkx tifffile pillow
+MPLBACKEND=Agg python -m pytest skimage --ignore=skimage/filters/rank/tests/test_rank.py
+```
+
+`test_rank.py` uses `skip` at module level, which newer pytest collection rejects.
+
+### sunpy (7c6e51e85410f3647af81e601a4bb4c9073a50c8)
+
+Python: 3.8.
+
+```bash
+pip install "numpy<1.22" "scipy<1.6.0" "scikit-image<0.18" "pandas<1.4" "matplotlib<3.5"
+pip install "asdf<2.8.0" "sqlalchemy<1.4" "hypothesis<6.0" "parfive<2.0"
+pip install pytest pytest-mock pytest-astropy mock pytest-cov
+pip install -e ".[all,tests]"
+MPLBACKEND=Agg python -m pytest -W ignore sunpy
+```
+
+`scipy<1.6` requires `scikit-image<0.18` because of the `QhullError` issue.
